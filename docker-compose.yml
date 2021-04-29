@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  soda-cx:
+    build: .
+    restart: always
+    container_name: soda-cx
+    ports:
+      - 5001:3000
