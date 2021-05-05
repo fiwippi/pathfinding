@@ -1,9 +1,11 @@
 <script>
     let links = [
-        { name: "Paint v1", href: "/paint" },
-        { name: "Plane", href: "/plane" },
+        { name: "Pathfinding", href: "/pathfinding" },
     ]
 </script>
+
+<!-- TODO make title page a big svg font with the word fanta and a ball hitting off the words?-->
+<!-- TODO set a global font -->
 
 <style>
     :global(#svelte) {
