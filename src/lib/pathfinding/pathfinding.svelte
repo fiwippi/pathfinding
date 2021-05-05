@@ -2,7 +2,7 @@
     import { sleep } from '$lib/pathfinding/util';
     import { fmtKey, fmtCell } from '$lib/pathfinding/cells';
     import { runningStore } from '$lib/pathfinding/stores';
-    import { sendCells, bfs } from "$lib/pathfinding/algorithms";
+    import { sendCells, bfs, greedybfs } from "$lib/pathfinding/algorithms";
     import { createEventDispatcher } from 'svelte';
 
     // Constants
@@ -56,7 +56,7 @@
 
         // Run the visualisation algorithm
         runningStore.set(true)
-        let path = await bfs(start, end, cells, delay, dispatch)
+        let path = await greedybfs(start, end, cells, delay, dispatch)
         if (path) {
             await drawPath(start, end, path, dispatch)
         }
