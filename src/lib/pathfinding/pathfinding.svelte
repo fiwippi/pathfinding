@@ -1,15 +1,17 @@
 <script>
     import { sleep } from '$lib/pathfinding/util';
     import { fmtKey, fmtCell } from '$lib/pathfinding/cells';
-    import { runningStore } from '$lib/pathfinding/stores';
-    import { sendCells, bfs, greedybfs } from "$lib/pathfinding/algorithms";
+    import { runningStore, diagonalStore } from '$lib/pathfinding/stores';
+    import { sendCells, bfs, greedybfs, dijkstra, astar } from "$lib/pathfinding/algorithms";
     import { createEventDispatcher } from 'svelte';
+    import Checkbox from "$lib/pathfinding/checkbox.svelte";
 
     // Constants
     const dispatch = createEventDispatcher();
 
     // Variables
     let delay; // Delay in milliseconds between checking each cell
+    let diagonals = false; // Whether to use diagonals
     let running = false; // Determines whether the program is running
     export let speed = 3; // Speed of pathfinding between 1 (slow) to 10 (fast)
     export let cells = new Map(); // The grid cells to perform pathfinding on
@@ -34,6 +36,14 @@
         let start = data.filter(cell => cell.start)[0]
         let end = data.filter(cell => cell.end)[0]
 
+        // Set whether using diagonals
+        console.log(diagonals)
+        if (diagonals) {
+            diagonalStore.set(true)
+        } else {
+            diagonalStore.set(false)
+        }
+
         // Ensures the old pathfinding algorithm is not running
         if (running) {
             runningStore.set(false)
@@ -46,7 +56,7 @@
             value.visiting = false
             value.path = false
 
-            if (!value.wall && !value.start && !value.end) {
+            if (!value.wall && !value.start && !value.end && !value.terrain) {
                 value.empty = true
             }
 
@@ -56,7 +66,7 @@
 
         // Run the visualisation algorithm
         runningStore.set(true)
-        let path = await greedybfs(start, end, cells, delay, dispatch)
+        let path = await astar(start, end, cells, delay, dispatch)
         if (path) {
             await drawPath(start, end, path, dispatch)
         }
@@ -99,3 +109,4 @@
 </script>
 
 <button on:click={findPath}>Draw Path</button>
+<Checkbox bind:value={diagonals} label="Use Diagonals?"/>

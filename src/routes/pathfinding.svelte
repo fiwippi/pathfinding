@@ -11,7 +11,7 @@
 
     // Variables
     let cells = new Map(); // The cells on the grid
-    let fillType = "wall"; // If drawing onto the cell, what type of cell should it be?
+    let fillType = "start"; // If drawing onto the cell, what type of cell should it be?
 
     let scale = 50;  // Width/Height of the cell in pixels
     let width = 15;  // Number of cells making the grid widthways
@@ -37,6 +37,7 @@
             value.wall = false
             value.start = false
             value.end = false
+            value.terrain = false
             value.empty = true
             cells.set(key, value)
         })
@@ -50,7 +51,9 @@
         for (let i = 0; i < w; i++) {
             for (let j = 0; j < h; j++) {
                 // Assume cell is default
-                let a = {visited:false, visiting:false, wall:false, path:false, empty:true, start:false, end:false};
+                let a = {visited:false, visiting:false,
+                    wall:false, path:false, empty:true,
+                    start:false, end:false, terrain: false};
 
                 // If the old cell at this grid position is not default then draw the new cell like it
                 if (cells.has(fmtKey(i, j))) {
@@ -62,13 +65,14 @@
                     a.empty = old.empty
                     a.start = old.start
                     a.end = old.end
+                    a.terrain = old.terrain
                 }
 
                 c.set(fmtKey(i, j),  {
                     x: i, y: j, cnt: counter,
                     visited: a.visited, visiting: a.visiting,
                     wall: a.wall, path: a.path, empty: a.empty,
-                    start: a.start, end: a.end
+                    start: a.start, end: a.end, terrain: a.terrain
                 })
 
                 // Counter keeps a unique id for each cell for iteration with each block
@@ -88,6 +92,7 @@
 <Radio bind:group={fillType} radioValue={"start"} radioLabel="Start" />
 <Radio bind:group={fillType} radioValue={"end"} radioLabel="End" />
 <Radio bind:group={fillType} radioValue={"wall"} radioLabel="Wall" />
+<Radio bind:group={fillType} radioValue={"terrain"} radioLabel="Terrain" />
 
 <h2>Grid</h2>
 <Number bind:value={width} numLabel={"Width"} />
@@ -109,6 +114,7 @@
                   bind:isPath={cell.path}
                   bind:isStart={cell.start}
                   bind:isEmpty={cell.empty}
+                  bind:isTerrain={cell.terrain}
                   bind:isVisited={cell.visited}
                   bind:isVisiting={cell.visiting} />
         {/each}

@@ -12,7 +12,7 @@ const right = i => (i + 1) << 1;
         return this._heap.length;
     }
     isEmpty() {
-        return this.size() == 0;
+        return this.size() === 0;
     }
     peek() {
         return this._heap[top];

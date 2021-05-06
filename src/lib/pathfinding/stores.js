@@ -4,3 +4,5 @@ import { writable } from 'svelte/store';
 export const fillStore = writable("");
 // Keeps track of whether the program is running or not
 export const runningStore = writable(false);
+// Whether to traverse diagonals
+export const diagonalStore = writable(false);

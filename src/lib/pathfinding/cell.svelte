@@ -25,7 +25,7 @@
     });
 
     // Fill
-    export let fillType = "wall" // When toggling, this decides what the fill type should be
+    export let fillType = "" // When toggling, this decides what the fill type should be
     export let fillMode = ""; // Whether the current file is adding or removing
 
     const fillSub = fillStore.subscribe(value => {
@@ -40,6 +40,7 @@
     export let isWall = false;
     export let isStart = false;
     export let isEnd = false;
+    export let isTerrain = false;
 
     // Resets the fill mode to nothing
     function resetFillMode() {
@@ -53,7 +54,12 @@
             // This ensures that we only add or only remove to cells and not add to some cells and remove from some
             // cells with the same mouse press
             if (fillMode === "") {
-                if ((fillType === "wall" && !isWall) || (fillType === "start" && !isStart) || (fillType === "end" && !isEnd)) {
+                let case1 = fillType === "wall" && !isWall
+                let case2 = fillType === "start" && !isStart
+                let case3 = fillType === "end" && !isEnd
+                let case4 = fillType === "terrain" && !isTerrain
+
+                if (case1 || case2 || case3 || case4) {
                     fillStore.set("add");
                 } else {
                     fillStore.set("remove");
@@ -66,16 +72,25 @@
                     isEnd = false
                     isWall = true
                     isStart = false
+                    isTerrain = false
                 }
                 if (fillType === "start") {
                     isEnd = false
                     isWall = false
                     isStart = true
+                    isTerrain = false
                 }
                 if (fillType === "end") {
                     isEnd = true
                     isWall = false
                     isStart = false
+                    isTerrain = false
+                }
+                if (fillType === "terrain") {
+                    isEnd = false
+                    isWall = false
+                    isStart = false
+                    isTerrain = true
                 }
                 isEmpty = false
             } else {
@@ -83,6 +98,7 @@
                 isEnd = false
                 isWall = false
                 isStart = false
+                isTerrain = false
                 isEmpty = true
             }
         }
@@ -92,6 +108,7 @@
 <style>
     .visited {fill: rgb(237,54,91);}
     .visiting {fill: rgb(20, 220, 180);}
+    .terrain{fill: darkolivegreen}
     .wall {fill: gray;}
     .path {fill: orange;}
     .empty {fill: wheat;}
@@ -106,7 +123,7 @@
     }
 </style>
 
-<rect x={coordX} y={coordY} {width} {height}
+<rect x={coordX} y={coordY} {width} {height} class:terrain={isTerrain}
       class:visited={isVisited} class:visiting={isVisiting}
       class:path={isPath} class:empty={isEmpty} class:wall={isWall}
       class:start={isStart} class:end={isEnd} on:mouseup={resetFillMode}
