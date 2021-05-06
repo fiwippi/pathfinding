@@ -38,8 +38,6 @@ function getMapNum(key, map, def) {
     return val
 }
 
-// TODO ability to save and load maps
-
 // Send the updated cells to the main pathfinding svelte component
 export function sendCells(c, dispatch) {
     dispatch('data', {

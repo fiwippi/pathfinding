@@ -42,3 +42,27 @@ export function getNeighbours(cell, cells) {
 
     return neighbours
 }
+
+// Save grid to a JSON file
+export function saveGrid(cells) {
+    let blob = new Blob([JSON.stringify([...cells])], {type : 'application/json'});
+    let blobUrl = URL.createObjectURL(blob);
+    let downloadLink = document.createElement("a");
+    downloadLink.href = blobUrl;
+    downloadLink.download = "grid.json";
+
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+
+// Load grid map from a json file
+export async function readGridFile(event){
+    return new Promise((resolve) => {
+        let fr = new FileReader();
+        fr.onload = () => {
+            resolve(new Map(JSON.parse(fr.result)));
+        };
+        fr.readAsText(event.detail.file);
+    });
+}

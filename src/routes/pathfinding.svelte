@@ -1,4 +1,4 @@
-<script>
+<script xmlns="http://www.w3.org/1999/html">
     // TODO styling
     // TODO modularise for cleaner code
 
@@ -6,7 +6,8 @@
     import Radio from '$lib/pathfinding/radio.svelte';
     import Number from '$lib/pathfinding/number.svelte';
     import Algo from '$lib/pathfinding/pathfinding.svelte';
-    import { fmtKey } from '$lib/pathfinding/cells';
+    import FileUpload from '$lib/pathfinding/fileupload.svelte';
+    import { fmtKey, saveGrid, readGridFile } from '$lib/pathfinding/cells';
     import { runningStore } from '$lib/pathfinding/stores';
 
     // Variables
@@ -21,6 +22,8 @@
     let pixelHeight; // Height of the grid in pixels
 
     let speed = 3; // How fast should the pathfinding happen, 1 (slowest) to 10 (quickest)
+
+    let files; // File to load from user to convert to grid
 
     // Dynamic variables
     $: pixelWidth = width * scale
@@ -86,6 +89,11 @@
     function handleCells(event) {
         cells = event.detail.cells
     }
+
+    //
+    async function loadGrid(event) {
+        cells = await readGridFile(event)
+    }
 </script>
 
 <h2>Cell Type</h2>
@@ -102,6 +110,8 @@
 <p>
     <Algo bind:cells on:data={handleCells} bind:speed/>
     <button on:click={clearGrid}>Clear Grid</button>
+    <button on:click={() => saveGrid(cells)}>Save Grid</button>
+    <FileUpload on:upload={loadGrid} bind:files accept="application/json" label="Load Grid" multiple={false}/>
 </p>
 <p>
     <svg width={pixelWidth} height={pixelHeight}>
