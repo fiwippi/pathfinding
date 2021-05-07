@@ -1,12 +1,9 @@
 <script xmlns="http://www.w3.org/1999/html">
-    // TODO styling
-    // TODO modularise for cleaner code
-
     import Cell from '$lib/pathfinding/cell.svelte';
-    import Radio from '$lib/pathfinding/radio.svelte';
-    import Number from '$lib/pathfinding/number.svelte';
-    import Algo from '$lib/pathfinding/pathfinding.svelte';
-    import FileUpload from '$lib/pathfinding/fileupload.svelte';
+    import Radio from '$lib/general/radio.svelte';
+    import Number from '$lib/general/number.svelte';
+    import Algo from '$lib/pathfinding/pathfind.svelte';
+    import FileUpload from '$lib/general/fileupload.svelte';
     import { fmtKey, saveGrid, readGridFile } from '$lib/pathfinding/cells';
     import { runningStore } from '$lib/pathfinding/stores';
 
@@ -15,14 +12,15 @@
     let fillType = "start"; // If drawing onto the cell, what type of cell should it be?
 
     let scale = 50;  // Width/Height of the cell in pixels
-    let width = 15;  // Number of cells making the grid widthways
-    let height = 10; // Number of cells making the grid lengthways
+    let width = 29;  // Number of cells making the grid widthways
+    let height = 13; // Number of cells making the grid lengthways
 
     let pixelWidth;  // Width of the grid in pixels
     let pixelHeight; // Height of the grid in pixels
 
-    let speed = 3; // How fast should the pathfinding happen, 1 (slowest) to 10 (quickest)
+    let speed = 5; // How fast should the pathfinding happen, 1 (slowest) to 10 (quickest)
 
+    let algorithm = "bfs"; // Which algorithm to use
     let files; // File to load from user to convert to grid
 
     // Dynamic variables
@@ -96,37 +94,60 @@
     }
 </script>
 
-<h2>Cell Type</h2>
-<Radio bind:group={fillType} radioValue={"start"} radioLabel="Start" />
-<Radio bind:group={fillType} radioValue={"end"} radioLabel="End" />
-<Radio bind:group={fillType} radioValue={"wall"} radioLabel="Wall" />
-<Radio bind:group={fillType} radioValue={"terrain"} radioLabel="Terrain" />
+<style>
+    .container {
+        display: flex;
+        flex-direction: row;
+    }
 
-<h2>Grid</h2>
-<Number bind:value={width} numLabel={"Width"} />
-<Number bind:value={height} numLabel={"Height"} />
-<Number bind:value={speed} numLabel={"Speed"} numMin={1} numMax={10}/>
+    svg {
+        border: 1px solid black;
+    }
+</style>
 
-<p>
-    <Algo bind:cells on:data={handleCells} bind:speed/>
-    <button on:click={clearGrid}>Clear Grid</button>
-    <button on:click={() => saveGrid(cells)}>Save Grid</button>
-    <FileUpload on:upload={loadGrid} bind:files accept="application/json" label="Load Grid" multiple={false}/>
-</p>
-<p>
-    <svg width={pixelWidth} height={pixelHeight}>
-        {#each [...cells] as [key, cell] (cell.cnt)}
-            <Cell x={cell.x} y={cell.y}
-                  {scale}
-                  fillType={fillType}
-                  bind:isEnd={cell.end}
-                  bind:isWall={cell.wall}
-                  bind:isPath={cell.path}
-                  bind:isStart={cell.start}
-                  bind:isEmpty={cell.empty}
-                  bind:isTerrain={cell.terrain}
-                  bind:isVisited={cell.visited}
-                  bind:isVisiting={cell.visiting} />
-        {/each}
-    </svg>
-</p>
+<div class="container">
+    <div>
+        <h2>Grid</h2>
+        <Number bind:value={width} numLabel={"Width:"} />
+        <Number bind:value={height} numLabel={"Height:"} />
+        <p>
+            <button on:click={() => saveGrid(cells)}>Save Grid</button>
+            <FileUpload on:upload={loadGrid} bind:files accept="application/json" label="Load Grid" multiple={false}/>
+        </p>
+
+        <h2>Draw</h2>
+        <Radio bind:group={fillType} radioValue={"start"} radioLabel="Start" />
+        <Radio bind:group={fillType} radioValue={"end"} radioLabel="End" />
+        <Radio bind:group={fillType} radioValue={"wall"} radioLabel="Wall" />
+        <Radio bind:group={fillType} radioValue={"terrain"} radioLabel="Terrain" />
+        <p><button on:click={clearGrid}>Clear Grid</button></p>
+
+        <h2>Algorithm</h2>
+        <Radio bind:group={algorithm} radioValue={"bfs"} radioLabel="Breadth First Search" />
+        <Radio bind:group={algorithm} radioValue={"greedy-bfs"} radioLabel="Greedy BFS" />
+        <Radio bind:group={algorithm} radioValue={"dijkstra"} radioLabel="Dijkstra" />
+        <Radio bind:group={algorithm} radioValue={"a-star"} radioLabel="A*" />
+        <p><Number bind:value={speed} numLabel={"Speed (1-10):"} numMin={1} numMax={10}/></p>
+
+        <p>
+            <Algo bind:cells on:data={handleCells} bind:speed {algorithm}/>
+        </p>
+    </div>
+    <div>
+        <svg width={pixelWidth} height={pixelHeight}>
+            {#each [...cells] as [key, cell] (cell.cnt)}
+                <Cell x={cell.x} y={cell.y}
+                      {scale}
+                      fillType={fillType}
+                      bind:isEnd={cell.end}
+                      bind:isWall={cell.wall}
+                      bind:isPath={cell.path}
+                      bind:isStart={cell.start}
+                      bind:isEmpty={cell.empty}
+                      bind:isTerrain={cell.terrain}
+                      bind:isVisited={cell.visited}
+                      bind:isVisiting={cell.visiting} />
+            {/each}
+        </svg>
+    </div>
+</div>

@@ -9,3 +9,9 @@
     {numLabel}
     <input type=number bind:value min={numMin} max={numMax}>
 </label>
+
+<style>
+    input {
+        margin-left: 3px;
+    }
+</style>

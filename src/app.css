@@ -1,3 +1,56 @@
+button:hover {
+    background-color: #dbe2cb;
+}
+
+button {
+    display: inline-block;
+    text-align: center;
+    margin: 0em;
+    background-color: #E6EED6;
+    color: black;
+    border: 1px solid black;
+    cursor: pointer;
+    padding: 1px 6px;
+    font: 400 13px 'Noto Sans JP', sans-serif;
+}
+
 html, body, #svelte {
-    background: aquamarine;
+    font-family: 'Noto Sans JP', sans-serif;
+}
+
+body {
+    font-size: 10pt;
+}
+
+html {
+    height: 100%;
+    background: #c9dbbf
+    /*background: linear-gradient(to bottom, #ff8da0 40%, #ff2c5b);*/
+}
+
+#svelte {
+    margin-left: 20px;
+}
+
+a {
+    color: black;
+    text-decoration: none;
+    border-bottom: 1px solid #393939;
+}
+
+a:hover, a:focus {
+    border-bottom: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 9px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ffb534;
+}
+
+::-webkit-scrollbar-track {
+    background: #c9dbbf;
 }

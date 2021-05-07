@@ -4,7 +4,7 @@
     import { runningStore, diagonalStore } from '$lib/pathfinding/stores';
     import { sendCells, bfs, greedybfs, dijkstra, astar } from "$lib/pathfinding/algorithms";
     import { createEventDispatcher } from 'svelte';
-    import Checkbox from "$lib/pathfinding/checkbox.svelte";
+    import Checkbox from "$lib/general/checkbox.svelte";
 
     // Constants
     const dispatch = createEventDispatcher();
@@ -13,6 +13,7 @@
     let delay; // Delay in milliseconds between checking each cell
     let diagonals = false; // Whether to use diagonals
     let running = false; // Determines whether the program is running
+    export let algorithm = "bfs"
     export let speed = 3; // Speed of pathfinding between 1 (slow) to 10 (fast)
     export let cells = new Map(); // The grid cells to perform pathfinding on
 
@@ -66,8 +67,22 @@
 
         // Run the visualisation algorithm
         runningStore.set(true)
-        let path = await astar(start, end, cells, delay, dispatch)
-        if (path) {
+        let path = undefined;
+        console.log(algorithm)
+        switch(algorithm) {
+            case "greedy-bfs":
+                path = await greedybfs(start, end, cells, delay, dispatch)
+                break
+            case "dijkstra":
+                path = await dijkstra(start, end, cells, delay, dispatch)
+                break
+            case "a-star":
+                path = await astar(start, end, cells, delay, dispatch)
+                break
+            default:
+                path = await bfs(start, end, cells, delay, dispatch)
+        }
+        if (path !== undefined) {
             await drawPath(start, end, path, dispatch)
         }
         runningStore.set(false)
@@ -108,5 +123,6 @@
     }
 </script>
 
+<h2>Pathfinding</h2>
 <button on:click={findPath}>Draw Path</button>
 <Checkbox bind:value={diagonals} label="Use Diagonals?"/>

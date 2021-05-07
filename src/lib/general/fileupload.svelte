@@ -21,6 +21,22 @@
     input {
         visibility: hidden;
     }
+
+    label:hover {
+        background-color: #dbe2cb;
+    }
+
+    label {
+        display: inline-block;
+        text-align: center;
+        margin: 0em;
+        background-color: #E6EED6;
+        color: black;
+        padding: 1px 6px;
+        font: 400 13px 'Noto Sans JP', sans-serif;
+        border: 1px solid black;
+        cursor: pointer;
+    }
 </style>
 
 <label for="files" class="button">{label}</label>

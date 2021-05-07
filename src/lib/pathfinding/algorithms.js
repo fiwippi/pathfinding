@@ -9,7 +9,6 @@ const runSub = runningStore.subscribe(value => {
     running = value;
 });
 
-
 // Heuristic for pathfinding
 function heuristic(a, b) {
     return Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
@@ -227,7 +226,7 @@ export async function astar(start, end, cells, delay, dispatch) {
                 }
                 await sleep(delay)
 
-                priority = nextCost + heuristic(end, next)*10
+                priority = nextCost + heuristic(end, next)*3
                 frontier.push([next, priority])
                 path.set(fmtCell(next), {dx: current.x - next.x, dy: current.y - next.y})
                 cost.set(fmtCell(next), nextCost)
