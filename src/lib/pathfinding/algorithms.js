@@ -3,6 +3,9 @@ import {sleep} from "$lib/pathfinding/util";
 import {runningStore} from '$lib/pathfinding/stores';
 import {PriorityQueue} from '$lib/pathfinding/queue';
 
+// TODO default start + default end + begin fill as wall
+// TODO make grid fill width
+
 // Determines whether the program is running
 let running = false;
 const runSub = runningStore.subscribe(value => {
@@ -11,19 +14,25 @@ const runSub = runningStore.subscribe(value => {
 
 // Heuristic for pathfinding
 function heuristic(a, b) {
-    return Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
+    let side1 = Math.abs(a.x - b.x)
+    let side2 = Math.abs(a.y - b.y)
+
+    return Math.sqrt((side1**2) + (side2**2))
 }
 
 // Calculates the cost from traversing from node 'a' to node 'b'
 function calcCost(a, b) {
-    let diagonal = (Math.abs(a.x - b.x)**2 + Math.abs(a.y - b.y)) ** 2 > 1
-
-    if (b.terrain && diagonal) {
-        return 22
-    } else if (b.terrain) {
-        return 18
-    } else if (diagonal) {
-        return 3
+    // let diagonal = (Math.abs(a.x - b.x)**2 + Math.abs(a.y - b.y)) ** 2 > 1
+    //
+    // if (b.terrain && diagonal) {
+    //     return 22
+    // } else if (b.terrain) {
+    //     return 18
+    // } else if (diagonal) {
+    //     return 3
+    // }
+    if (b.terrain) {
+        return 20
     }
     return 0
 }
@@ -226,7 +235,7 @@ export async function astar(start, end, cells, delay, dispatch) {
                 }
                 await sleep(delay)
 
-                priority = nextCost + heuristic(end, next)*3
+                priority = nextCost + heuristic(end, next)*2
                 frontier.push([next, priority])
                 path.set(fmtCell(next), {dx: current.x - next.x, dy: current.y - next.y})
                 cost.set(fmtCell(next), nextCost)
