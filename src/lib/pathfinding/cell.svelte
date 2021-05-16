@@ -93,8 +93,14 @@
                     isTerrain = true
                 }
                 isEmpty = false
+                isPath = false
+                isVisiting = false
+                isVisited = false
             } else {
                 // Removing
+                isPath = false
+                isVisiting = false
+                isVisited = false
                 isEnd = false
                 isWall = false
                 isStart = false

@@ -6,13 +6,15 @@
     import FileUpload from '$lib/general/fileupload.svelte';
     import { fmtKey, saveGrid, readGridFile } from '$lib/pathfinding/cells';
     import { runningStore } from '$lib/pathfinding/stores';
+    import {onMount} from "svelte";
+    import {sleep} from "$lib/pathfinding/util";
 
     // Variables
     let cells = new Map(); // The cells on the grid
     let fillType = "start"; // If drawing onto the cell, what type of cell should it be?
 
     let scale = 50;  // Width/Height of the cell in pixels
-    let width = 29;  // Number of cells making the grid widthways
+    let width = 10;  // Number of cells making the grid widthways
     let height = 13; // Number of cells making the grid lengthways
 
     let pixelWidth;  // Width of the grid in pixels
@@ -29,8 +31,9 @@
     $: cells = updateCells(width, height)
 
     // Clears the grid and stops all ongoing pathfinding operations
-    function clearGrid() {
+    async function clearGrid() {
         runningStore.set(false)
+        await sleep(100)
         cells.forEach(function(value, key) {
             value.visited = false
             value.visiting = false
@@ -88,10 +91,17 @@
         cells = event.detail.cells
     }
 
-    //
+    // Loads grid from a file
     async function loadGrid(event) {
         cells = await readGridFile(event)
     }
+
+    onMount(async () => {
+        let totalWidth = document.getElementById("container-div").offsetWidth
+        let settingsWidth = document.getElementById("settings-div").offsetWidth
+        let availableWidth = totalWidth - settingsWidth
+        width = Math.floor(availableWidth / scale)
+    });
 </script>
 
 <style>
@@ -105,11 +115,12 @@
     }
 </style>
 
-<div class="container">
-    <div>
+<div class="container" id="container-div">
+    <div id="settings-div">
         <h2>Grid</h2>
         <Number bind:value={width} numLabel={"Width:"} />
         <Number bind:value={height} numLabel={"Height:"} />
+        <Number bind:value={scale} numLabel={"Scale:"} numMin={20} numMax={50}/>
         <p>
             <button on:click={() => saveGrid(cells)}>Save Grid</button>
             <FileUpload on:upload={loadGrid} bind:files accept="application/json" label="Load Grid" multiple={false}/>
@@ -133,7 +144,7 @@
             <Algo bind:cells on:data={handleCells} bind:speed {algorithm}/>
         </p>
     </div>
-    <div>
+    <div id="grid-div">
         <svg width={pixelWidth} height={pixelHeight}>
             {#each [...cells] as [key, cell] (cell.cnt)}
                 <Cell x={cell.x} y={cell.y}

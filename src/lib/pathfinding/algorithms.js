@@ -3,10 +3,6 @@ import {sleep} from "$lib/pathfinding/util";
 import {runningStore, drawThroughoutStore} from '$lib/pathfinding/stores';
 import {PriorityQueue} from '$lib/pathfinding/queue';
 
-// TODO edit scale of the cells
-// TODO run pathfinding in a thread so it can be stopped with a function
-// TODO make grid fill width
-
 // Determines whether the program is running
 let running = false;
 const runSub = runningStore.subscribe(value => {
@@ -119,9 +115,7 @@ export async function bfs(start, end, cells, delay, dispatch) {
             if (!path.has(fmtCell(next))) {
                 [cells, next] = setVisiting(cells, next, dispatch)
 
-                if (!running) {
-                    return
-                }
+                if (!running) {return}
                 await sleep(delay)
 
                 frontier.push(next)
@@ -161,9 +155,7 @@ export async function greedybfs(start, end, cells, delay, dispatch) {
             if (!path.has(fmtCell(next))) {
                 [cells, next] = setVisiting(cells, next, dispatch)
 
-                if (!running) {
-                    return
-                }
+                if (!running) {return}
                 await sleep(delay)
 
                 priority = heuristic(end, next)
@@ -205,9 +197,7 @@ export async function dijkstra(start, end, cells, delay, dispatch) {
             if (!path.has(fmtCell(next)) || nextCost < getMapNum(fmtCell(next), cost, Number.MAX_SAFE_INTEGER)) {
                 [cells, next] = setVisiting(cells, next, dispatch)
 
-                if (!running) {
-                    return
-                }
+                if (!running) {return}
                 await sleep(delay)
 
                 frontier.push([next, nextCost])
@@ -251,9 +241,7 @@ export async function astar(start, end, cells, delay, dispatch) {
             if (!path.has(fmtCell(next)) || nextCost < getMapNum(fmtCell(next), cost, Number.MAX_SAFE_INTEGER)) {
                 [cells, next] = setVisiting(cells, next, dispatch)
 
-                if (!running) {
-                    return
-                }
+                if (!running) {return}
                 await sleep(delay)
 
                 priority = nextCost + heuristic(end, next)*3
