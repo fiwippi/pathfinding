@@ -3,8 +3,8 @@ import {sleep} from "$lib/pathfinding/util";
 import {runningStore} from '$lib/pathfinding/stores';
 import {PriorityQueue} from '$lib/pathfinding/queue';
 
-// TODO default start + default end + begin fill as wall
 // TODO make grid fill width
+// TODO function to wrap editing cell states
 
 // Determines whether the program is running
 let running = false;
@@ -22,19 +22,22 @@ function heuristic(a, b) {
 
 // Calculates the cost from traversing from node 'a' to node 'b'
 function calcCost(a, b) {
+    if (b.terrain) {
+        return heuristic(a, b) + 50
+    }
+    return heuristic(a, b)
+
+    // let total = 1
     // let diagonal = (Math.abs(a.x - b.x)**2 + Math.abs(a.y - b.y)) ** 2 > 1
     //
-    // if (b.terrain && diagonal) {
-    //     return 22
-    // } else if (b.terrain) {
-    //     return 18
-    // } else if (diagonal) {
-    //     return 3
+    // if (b.terrain) {
+    //     total += 100
     // }
-    if (b.terrain) {
-        return 20
-    }
-    return 0
+    // if (diagonal) {
+    //     total += 2
+    // }
+    //
+    // return total
 }
 
 // Gets a key's value from a map, if undefined returns 0
@@ -109,7 +112,7 @@ export async function greedybfs(start, end, cells, delay, dispatch) {
     frontier.push([start, 0])
     path.set(fmtCell(start), NaN)
 
-    while (!frontier.isEmpty()) {
+    while (frontier.size() !== 0) {
         if (!running) {
             return
         }
@@ -159,22 +162,19 @@ export async function dijkstra(start, end, cells, delay, dispatch) {
     path.set(fmtCell(start), NaN)
     cost.set(fmtCell(start), 0)
 
-    while (!frontier.isEmpty()) {
+    while (frontier.size() !== 0) {
         if (!running) {
             return
         }
 
         let current = frontier.pop()[0]
-
         let n = getNeighbours(current, cells)
         for (let i = 0; i < n.length; i++) {
             let next = n[i]
             let nextCost = getMapNum(fmtCell(current), cost, 0) + calcCost(current, next)
-
-            if (nextCost < getMapNum(fmtCell(next), cost, Number.MAX_SAFE_INTEGER)) {
+            if (!path.has(fmtCell(next)) || nextCost < getMapNum(fmtCell(next), cost, Number.MAX_SAFE_INTEGER)) {
                 next.visiting = true
                 next.empty = false
-                next.terrain = false
                 cells.set(fmtCell(next), next)
                 sendCells(cells, dispatch)
 
@@ -223,10 +223,9 @@ export async function astar(start, end, cells, delay, dispatch) {
             let next = n[i]
             let nextCost = getMapNum(fmtCell(current), cost, 0) + calcCost(current, next)
 
-            if (nextCost < getMapNum(fmtCell(next), cost, Number.MAX_SAFE_INTEGER)) {
+            if (!path.has(fmtCell(next)) || nextCost < getMapNum(fmtCell(next), cost, Number.MAX_SAFE_INTEGER)) {
                 next.visiting = true
                 next.empty = false
-                next.terrain = false
                 cells.set(fmtCell(next), next)
                 sendCells(cells, dispatch)
 
@@ -235,7 +234,7 @@ export async function astar(start, end, cells, delay, dispatch) {
                 }
                 await sleep(delay)
 
-                priority = nextCost + heuristic(end, next)*2
+                priority = nextCost + heuristic(end, next)*3
                 frontier.push([next, priority])
                 path.set(fmtCell(next), {dx: current.x - next.x, dy: current.y - next.y})
                 cost.set(fmtCell(next), nextCost)

@@ -106,13 +106,12 @@
 </script>
 
 <style>
-    .visited {fill: #ffb534;}
-    .visiting {fill: #a5d5d5;}
+    .visited, .terrain.visited {fill: #ffb534;}
+    .visiting, .terrain.visiting {fill: #a5d5d5;}
     .terrain{fill: darkolivegreen}
     .wall {fill: gray;}
     .path {fill: #ee441d;}
     .empty {fill: #E6EED6;}
-    /*.empty {fill: wheat;}*/
     .start {fill: lime;}
     .end {fill: red;}
 

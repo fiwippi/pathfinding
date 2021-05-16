@@ -23,22 +23,23 @@ export function getNeighbours(cell, cells) {
 
     let neighbours = [];
 
-    neighbours.push(cells.get(fmtKey(x, y+1))) // North
-    neighbours.push(cells.get(fmtKey(x, y-1))) // South
-    neighbours.push(cells.get(fmtKey(x+1, y))) // East
+    // Y increases as you go lower, top left is (0, 0)
+    neighbours.push(cells.get(fmtKey(x, y-1))) // North
     neighbours.push(cells.get(fmtKey(x-1, y))) // West
+    neighbours.push(cells.get(fmtKey(x, y+1))) // South
+    neighbours.push(cells.get(fmtKey(x+1, y))) // East
 
     if (useDiagonals) {
-        neighbours.push(cells.get(fmtKey(x+1, y+1))) // North East
-        neighbours.push(cells.get(fmtKey(x-1, y+1))) // North West
-        neighbours.push(cells.get(fmtKey(x+1, y-1))) // South East
-        neighbours.push(cells.get(fmtKey(x-1, y-1))) // South West
+        neighbours.push(cells.get(fmtKey(x+1, y-1))) // North East
+        neighbours.push(cells.get(fmtKey(x-1, y-1))) // North West
+        neighbours.push(cells.get(fmtKey(x+1, y+1))) // South East
+        neighbours.push(cells.get(fmtKey(x-1, y+1))) // South West
     }
 
     neighbours = neighbours.filter( Boolean ); // Ensures cell is not undefined
     neighbours = neighbours.filter(cell => !cell.wall)
-    neighbours = neighbours.filter(cell => !cell.visited)
-    neighbours = neighbours.filter(cell => !cell.visiting)
+    // neighbours = neighbours.filter(cell => !cell.visited)
+    // neighbours = neighbours.filter(cell => !cell.visiting)
 
     return neighbours
 }
