@@ -1,8 +1,8 @@
 <script>
     import { sleep } from '$lib/pathfinding/util';
     import { fmtKey, fmtCell } from '$lib/pathfinding/cells';
-    import { runningStore, diagonalStore } from '$lib/pathfinding/stores';
-    import { sendCells, bfs, greedybfs, dijkstra, astar } from "$lib/pathfinding/algorithms";
+    import { runningStore, diagonalStore, drawThroughoutStore } from '$lib/pathfinding/stores';
+    import { sendCells, bfs, greedybfs, dijkstra, astar, drawPath } from "$lib/pathfinding/algorithms";
     import { createEventDispatcher } from 'svelte';
     import Checkbox from "$lib/general/checkbox.svelte";
 
@@ -12,6 +12,7 @@
     // Variables
     let delay; // Delay in milliseconds between checking each cell
     let diagonals = false; // Whether to use diagonals
+    let drawThroughout = false // Whether to draw the path as the algorithm is running
     let running = false; // Determines whether the program is running
     export let algorithm = "bfs"
     export let speed = 3; // Speed of pathfinding between 1 (slow) to 10 (fast)
@@ -38,11 +39,17 @@
         let end = data.filter(cell => cell.end)[0]
 
         // Set whether using diagonals
-        console.log(diagonals)
         if (diagonals) {
             diagonalStore.set(true)
         } else {
             diagonalStore.set(false)
+        }
+
+        // Whether to draw the path as its running
+        if (drawThroughout) {
+            drawThroughoutStore.set(true)
+        } else {
+            drawThroughoutStore.set(false)
         }
 
         // Ensures the old pathfinding algorithm is not running
@@ -83,7 +90,7 @@
                 path = await bfs(start, end, cells, delay, dispatch)
         }
         if (path !== undefined) {
-            await drawPath(start, end, path, dispatch)
+            await drawPath(start, end, path, dispatch, true, cells)
         }
         runningStore.set(false)
     }
@@ -100,29 +107,9 @@
         }
         return true
     }
-
-    async function drawPath(start, end, path, dispatch) {
-        let px = end.x
-        let py = end.y
-
-        while ((px !== start.x) || (py !== start.y)) {
-            let node = path.get(fmtKey(px, py))
-            px += node.dx
-            py += node.dy
-
-
-            let cell = cells.get(fmtKey(px, py))
-            cell.path = true
-            cell.visiting = false
-            cell.visited = false
-            cells.set(fmtCell(cell), cell)
-            sendCells(cells, dispatch)
-
-            await sleep(50)
-        }
-    }
 </script>
 
 <h2>Pathfinding</h2>
 <button on:click={findPath}>Draw Path</button>
 <Checkbox bind:value={diagonals} label="Use Diagonals?"/>
+<Checkbox bind:value={drawThroughout} label="Draw Path Throughout?"/>

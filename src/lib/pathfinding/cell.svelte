@@ -110,7 +110,7 @@
     .visiting, .terrain.visiting {fill: #a5d5d5;}
     .terrain{fill: darkolivegreen}
     .wall {fill: gray;}
-    .path {fill: #ee441d;}
+    .path, .path.visiting, .path.visited, .path.terrain {fill: #ee441d;}
     .empty {fill: #E6EED6;}
     .start {fill: lime;}
     .end {fill: red;}

@@ -6,3 +6,5 @@ export const fillStore = writable("");
 export const runningStore = writable(false);
 // Whether to traverse diagonals
 export const diagonalStore = writable(false);
+// Whether to draw the path throughout
+export const drawThroughoutStore = writable(false);

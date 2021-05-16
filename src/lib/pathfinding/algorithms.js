@@ -1,15 +1,22 @@
-import {fmtCell, getNeighbours} from "$lib/pathfinding/cells";
+import {fmtCell, fmtKey, getNeighbours} from "$lib/pathfinding/cells";
 import {sleep} from "$lib/pathfinding/util";
-import {runningStore} from '$lib/pathfinding/stores';
+import {runningStore, drawThroughoutStore} from '$lib/pathfinding/stores';
 import {PriorityQueue} from '$lib/pathfinding/queue';
 
+// TODO edit scale of the cells
+// TODO run pathfinding in a thread so it can be stopped with a function
 // TODO make grid fill width
-// TODO function to wrap editing cell states
 
 // Determines whether the program is running
 let running = false;
 const runSub = runningStore.subscribe(value => {
     running = value;
+});
+
+// Whether to draw the path throughout
+let drawThroughout = false;
+const throughoutSub = drawThroughoutStore.subscribe(value => {
+    drawThroughout = value;
 });
 
 // Heuristic for pathfinding
@@ -26,18 +33,6 @@ function calcCost(a, b) {
         return heuristic(a, b) + 50
     }
     return heuristic(a, b)
-
-    // let total = 1
-    // let diagonal = (Math.abs(a.x - b.x)**2 + Math.abs(a.y - b.y)) ** 2 > 1
-    //
-    // if (b.terrain) {
-    //     total += 100
-    // }
-    // if (diagonal) {
-    //     total += 2
-    // }
-    //
-    // return total
 }
 
 // Gets a key's value from a map, if undefined returns 0
@@ -56,6 +51,57 @@ export function sendCells(c, dispatch) {
     });
 }
 
+// Wraps formatting cells
+function setVisiting(cells, cell, dispatch) {
+    cell.visiting = true
+    cell.empty = false
+    cells.set(fmtCell(cell), cell)
+    sendCells(cells, dispatch)
+
+    return [cells, cell]
+}
+
+function setVisited(cells, cell, dispatch) {
+    cell.visited = true
+    cell.visiting = false
+    cell.empty = false
+    cells.set(fmtCell(cell), cell)
+    sendCells(cells, dispatch)
+
+    return [cells, cell]
+}
+
+// Drawing the path
+export async function drawPath(start, end, path, dispatch, delay, cells) {
+    let px = end.x
+    let py = end.y
+
+    while ((px !== start.x) || (py !== start.y)) {
+        let node = path.get(fmtKey(px, py))
+        px += node.dx
+        py += node.dy
+
+
+        let cell = cells.get(fmtKey(px, py))
+        cell.path = true
+        cells.set(fmtCell(cell), cell)
+        sendCells(cells, dispatch)
+
+        if (delay) {
+            await sleep(50)
+        }
+    }
+}
+
+// Cleans the path
+export async function cleanPath(cells) {
+    cells.forEach(function(value, key) {
+        value.path = false
+        cells.set(key, value)
+    })
+    return cells
+}
+
 // Breadth First Search
 export async function bfs(start, end, cells, delay, dispatch) {
     let frontier = [];
@@ -65,22 +111,13 @@ export async function bfs(start, end, cells, delay, dispatch) {
     path.set(fmtCell(start), NaN)
 
     while (frontier.length !== 0) {
-        if (!running) {
-            return
-        }
-
         let current = frontier.shift()
 
         let n = getNeighbours(current, cells)
         for (let i = 0; i < n.length; i++) {
             let next = n[i]
-
             if (!path.has(fmtCell(next))) {
-                next.visiting = true
-                next.empty = false
-                next.terrain = false
-                cells.set(fmtCell(next), next)
-                sendCells(cells, dispatch)
+                [cells, next] = setVisiting(cells, next, dispatch)
 
                 if (!running) {
                     return
@@ -90,10 +127,12 @@ export async function bfs(start, end, cells, delay, dispatch) {
                 frontier.push(next)
                 path.set(fmtCell(next), {dx: current.x - next.x, dy: current.y - next.y})
 
-                next.visited = true
-                next.visiting = false
-                cells.set(fmtCell(next), next)
-                sendCells(cells, dispatch)
+                [cells, next] = setVisited(cells, next, dispatch)
+
+                if (drawThroughout) {
+                    cells = await cleanPath(cells)
+                    await drawPath(start, next, path, dispatch, false, cells)
+                }
 
                 if (fmtCell(next) === fmtCell(end)) {
                     return path
@@ -113,10 +152,6 @@ export async function greedybfs(start, end, cells, delay, dispatch) {
     path.set(fmtCell(start), NaN)
 
     while (frontier.size() !== 0) {
-        if (!running) {
-            return
-        }
-
         let current = frontier.pop()[0]
 
         let n = getNeighbours(current, cells)
@@ -124,11 +159,7 @@ export async function greedybfs(start, end, cells, delay, dispatch) {
             let next = n[i]
 
             if (!path.has(fmtCell(next))) {
-                next.visiting = true
-                next.empty = false
-                next.terrain = false
-                cells.set(fmtCell(next), next)
-                sendCells(cells, dispatch)
+                [cells, next] = setVisiting(cells, next, dispatch)
 
                 if (!running) {
                     return
@@ -139,10 +170,12 @@ export async function greedybfs(start, end, cells, delay, dispatch) {
                 frontier.push([next, priority])
                 path.set(fmtCell(next), {dx: current.x - next.x, dy: current.y - next.y})
 
-                next.visited = true
-                next.visiting = false
-                cells.set(fmtCell(next), next)
-                sendCells(cells, dispatch)
+                [cells, next] = setVisited(cells, next, dispatch)
+
+                if (drawThroughout) {
+                    cells = await cleanPath(cells)
+                    await drawPath(start, next, path, dispatch, false, cells)
+                }
 
                 if (fmtCell(next) === fmtCell(end)) {
                     return path
@@ -163,20 +196,14 @@ export async function dijkstra(start, end, cells, delay, dispatch) {
     cost.set(fmtCell(start), 0)
 
     while (frontier.size() !== 0) {
-        if (!running) {
-            return
-        }
-
         let current = frontier.pop()[0]
+
         let n = getNeighbours(current, cells)
         for (let i = 0; i < n.length; i++) {
             let next = n[i]
             let nextCost = getMapNum(fmtCell(current), cost, 0) + calcCost(current, next)
             if (!path.has(fmtCell(next)) || nextCost < getMapNum(fmtCell(next), cost, Number.MAX_SAFE_INTEGER)) {
-                next.visiting = true
-                next.empty = false
-                cells.set(fmtCell(next), next)
-                sendCells(cells, dispatch)
+                [cells, next] = setVisiting(cells, next, dispatch)
 
                 if (!running) {
                     return
@@ -187,10 +214,12 @@ export async function dijkstra(start, end, cells, delay, dispatch) {
                 path.set(fmtCell(next), {dx: current.x - next.x, dy: current.y - next.y})
                 cost.set(fmtCell(next), nextCost)
 
-                next.visited = true
-                next.visiting = false
-                cells.set(fmtCell(next), next)
-                sendCells(cells, dispatch)
+                [cells, next] = setVisited(cells, next, dispatch)
+
+                if (drawThroughout) {
+                    cells = await cleanPath(cells)
+                    await drawPath(start, next, path, dispatch, false, cells)
+                }
 
                 if (fmtCell(next) === fmtCell(end)) {
                     return path
@@ -212,10 +241,6 @@ export async function astar(start, end, cells, delay, dispatch) {
     cost.set(fmtCell(start), 0)
 
     while (!frontier.isEmpty()) {
-        if (!running) {
-            return
-        }
-
         let current = frontier.pop()[0]
 
         let n = getNeighbours(current, cells)
@@ -224,10 +249,7 @@ export async function astar(start, end, cells, delay, dispatch) {
             let nextCost = getMapNum(fmtCell(current), cost, 0) + calcCost(current, next)
 
             if (!path.has(fmtCell(next)) || nextCost < getMapNum(fmtCell(next), cost, Number.MAX_SAFE_INTEGER)) {
-                next.visiting = true
-                next.empty = false
-                cells.set(fmtCell(next), next)
-                sendCells(cells, dispatch)
+                [cells, next] = setVisiting(cells, next, dispatch)
 
                 if (!running) {
                     return
@@ -239,10 +261,12 @@ export async function astar(start, end, cells, delay, dispatch) {
                 path.set(fmtCell(next), {dx: current.x - next.x, dy: current.y - next.y})
                 cost.set(fmtCell(next), nextCost)
 
-                next.visited = true
-                next.visiting = false
-                cells.set(fmtCell(next), next)
-                sendCells(cells, dispatch)
+                [cells, next] = setVisited(cells, next, dispatch)
+
+                if (drawThroughout) {
+                    cells = await cleanPath(cells)
+                    await drawPath(start, next, path, dispatch, false, cells)
+                }
 
                 if (fmtCell(next) === fmtCell(end)) {
                     return path
