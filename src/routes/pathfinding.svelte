@@ -5,7 +5,7 @@
     import Algo from '$lib/pathfinding/pathfind.svelte';
     import FileUpload from '$lib/general/fileupload.svelte';
     import { fmtKey, saveGrid, readGridFile } from '$lib/pathfinding/cells';
-    import { runningStore } from '$lib/pathfinding/stores';
+    import { runningStore, weightStore } from '$lib/pathfinding/stores';
     import {onMount} from "svelte";
     import {sleep} from "$lib/pathfinding/util";
 
@@ -21,6 +21,7 @@
     let pixelHeight; // Height of the grid in pixels
 
     let speed = 5; // How fast should the pathfinding happen, 1 (slowest) to 10 (quickest)
+    let terrainWeight = 50;
 
     let algorithm = "bfs"; // Which algorithm to use
     let files; // File to load from user to convert to grid
@@ -29,6 +30,7 @@
     $: pixelWidth = width * scale
     $: pixelHeight = height * scale
     $: cells = updateCells(width, height)
+    $: weightStore.set(terrainWeight)
 
     // Clears the grid and stops all ongoing pathfinding operations
     async function clearGrid() {
@@ -138,7 +140,10 @@
         <Radio bind:group={algorithm} radioValue={"greedy-bfs"} radioLabel="Greedy BFS" />
         <Radio bind:group={algorithm} radioValue={"dijkstra"} radioLabel="Dijkstra" />
         <Radio bind:group={algorithm} radioValue={"a-star"} radioLabel="A*" />
-        <p><Number bind:value={speed} numLabel={"Speed (1-10):"} numMin={1} numMax={10}/></p>
+        <p>
+            <Number bind:value={speed} numLabel={"Speed (1-10):"} numMin={1} numMax={10}/>
+            <Number bind:value={terrainWeight} numLabel={"Terrain Weight:"} numMin={0} numMax={100}/>
+        </p>
 
         <p>
             <Algo bind:cells on:data={handleCells} bind:speed {algorithm}/>

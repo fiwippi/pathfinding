@@ -8,3 +8,5 @@ export const runningStore = writable(false);
 export const diagonalStore = writable(false);
 // Whether to draw the path throughout
 export const drawThroughoutStore = writable(false);
+// Whether to draw the path throughout
+export const weightStore = writable(50);

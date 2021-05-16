@@ -1,6 +1,6 @@
 import {fmtCell, fmtKey, getNeighbours} from "$lib/pathfinding/cells";
 import {sleep} from "$lib/pathfinding/util";
-import {runningStore, drawThroughoutStore} from '$lib/pathfinding/stores';
+import {runningStore, drawThroughoutStore, weightStore} from '$lib/pathfinding/stores';
 import {PriorityQueue} from '$lib/pathfinding/queue';
 
 // Determines whether the program is running
@@ -15,6 +15,12 @@ const throughoutSub = drawThroughoutStore.subscribe(value => {
     drawThroughout = value;
 });
 
+//
+let terrainWeight = 50;
+const weightSub = weightStore.subscribe(value => {
+    terrainWeight = value;
+});
+
 // Heuristic for pathfinding
 function heuristic(a, b) {
     let side1 = Math.abs(a.x - b.x)
@@ -26,7 +32,7 @@ function heuristic(a, b) {
 // Calculates the cost from traversing from node 'a' to node 'b'
 function calcCost(a, b) {
     if (b.terrain) {
-        return heuristic(a, b) + 50
+        return heuristic(a, b) + terrainWeight
     }
     return heuristic(a, b)
 }
