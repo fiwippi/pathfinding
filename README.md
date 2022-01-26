@@ -1,8 +1,8 @@
-# soda-cx
-boom!
+# pathfinding
+webpage to visualise pathfinding algorithms
 
-```
-Adding tags:
-  - `git tag <tagname> -a`
-  - `git push origin --tags`
-```
+## Algorithms
+- Breadth First Search
+- Greedy Breadth First Search
+- Dijkstra
+- A*
